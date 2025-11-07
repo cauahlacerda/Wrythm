@@ -1,61 +1,42 @@
 ﻿import os
 from dotenv import load_dotenv
+from fastapi import FastAPI
 from langchain_openai import ChatOpenAI
+import uvicorn
 
+
+from src.rag_query import query_documents
+from src.lanchain import initalize_langchain
 from src.document_loader import load_documents_from_data, split_documents
 from src.vector_store import create_vector_store, save_vector_store, load_vector_store
 from src.interactive import test_rag_interactive
+from pydantic import BaseModel
 
-load_dotenv()
 
 
-def main():
-    """Função principal que coordena o processo RAG"""
-    try:
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            print(" Chave da OpenAI não encontrada!")
-            print(" Configure o arquivo .env com sua chave API")
-            return False
-        
-        print(" Conectado!")
-        print(" Inicializando assistente...")
-        llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
-        
-        vector_store = load_vector_store()
-        if vector_store:
-            print(" Documentos carregados da memória")
-        else:
-            print("\n Primeira execução - processando documentos...")
-            documents = load_documents_from_data()
-            if not documents:
-                print("\n Nenhum documento encontrado na pasta 'data'")
-                return False
-            chunks = split_documents(documents)
-            if not chunks:
-                print("\n Erro ao processar documentos")
-                return False
-            print(f"\n Processados: {len(documents)} páginas em {len(chunks)} partes")
-            vector_store = create_vector_store(chunks)
-            if not vector_store:
-                print("\n Erro ao criar índice de busca")
-                return False
-            save_vector_store(vector_store)
-        
-        # Inicia modo interativo
-        test_rag_interactive(vector_store, llm)
-        
-        return True
-    except Exception as e:
-        print(f"\n Erro: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return False
+vector_store, llm = initalize_langchain()
 
+app = FastAPI()
+
+
+@app.get("/")
+def initialize():
+    return {
+        "message": " ASSISTENTE INTELIGENTE DE DOCUMENTOS iniciado com sucesso!"
+    }
+class MessageRequest(BaseModel):
+        message: str
+
+@app.post("/msg")
+def process_message(request: MessageRequest):
+    message = request.message
+    result = query_documents(vector_store, llm, message)
+    return {"result": result['answer']}
+    
 
 if __name__ == "__main__":
-    print("=" * 60)
     print(" ASSISTENTE INTELIGENTE DE DOCUMENTOS")
-    print("=" * 60)
-    main()
-    print("\n" + "=" * 60)
+  
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+

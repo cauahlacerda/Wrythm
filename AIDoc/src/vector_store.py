@@ -31,7 +31,7 @@ def save_vector_store(vector_store, path="vectorstore"):
         return False
 
 
-def load_vector_store(path="vectorstore"):
+def load_vector_store(path="../vectorstore"):
     """Carrega um vector store salvo anteriormente"""
     try:
         if not Path(path).exists():

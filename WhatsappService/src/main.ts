@@ -1,5 +1,6 @@
 import { Client, type Message } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
+import sendMessage from "../service/messages.js";
 
 console.log("Starting Bot...");
 
@@ -45,7 +46,14 @@ client.on("message", async (message:Message) => {
 
         if(!message.fromMe && !chat.isGroup) {
             const USER_PHONE = message.from.split("@")[0];
-            console.log(`${USER_PHONE}:${message.body}`);
+            console.log(`Message from ${USER_PHONE}: ${message.body}`);
+            if (USER_PHONE === "558381461691") {
+              await message.reply("Aguarde um momento, estou processando sua solicitação...");
+              const result = await sendMessage(message.body);
+              console.log(`Response to ${USER_PHONE}: ${result}`);
+              await chat.sendMessage(result);
+
+            }
 
         }
 

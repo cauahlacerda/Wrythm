@@ -52,7 +52,7 @@ docker-compose up --build
 
 #### Desenvolvimento Local
 
-**AIDoc (Python):**
+**AIDoc (Python/FastAPI):**
 ```bash
 cd AIDoc
 python -m venv venv
@@ -60,6 +60,9 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
 ```
+
+A API estará disponível em: http://localhost:8000
+Documentação interativa: http://localhost:8000/docs
 
 **WhatsappService (Node.js/TypeScript):**
 ```bash
